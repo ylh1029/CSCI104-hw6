@@ -375,8 +375,6 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
     }
     
     loadFactor_ = static_cast<double>(size()) / CAPACITIES[mIndex_];
-    std::cout << "Load factor: " << loadFactor_ << std::endl;
-
 }
 
 // To be completed
