@@ -278,7 +278,8 @@ private:
     // ADD MORE DATA MEMBERS HERE, AS NECESSARY
     double resizeAlpha_;
     double loadFactor_;
-    size_t size_;
+    size_t aliveSize_;
+    size_t totalSize_;
 };
 
 // ----------------------------------------------------------------------------
@@ -303,7 +304,8 @@ HashTable<K,V,Prober,Hash,KEqual>::HashTable(
     // Initialize any other data members as necessary
     mIndex_ = 0;
     loadFactor_ = 0;
-    size_ = 0;
+    aliveSize_ = 0;
+    totalSize_ = 0;
     table_.resize(CAPACITIES[mIndex_], nullptr);
 }
 
@@ -353,7 +355,7 @@ size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 {
-    loadFactor_ = static_cast<double>(size_) / CAPACITIES[mIndex_];
+    loadFactor_ = static_cast<double>(totalSize_) / CAPACITIES[mIndex_];
 
     if(this -> loadFactor_ >= this -> resizeAlpha_){
         resize();
@@ -369,7 +371,8 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
     else if(!table_[h]){
     //Found a free space 
         table_[h] = new HashItem(p);
-        size_++;
+        totalSize_++;
+        aliveSize_++;
     }
 
     else{
@@ -386,6 +389,7 @@ void HashTable<K,V,Prober,Hash,KEqual>::remove(const KeyType& key)
 
     if(remove){
         remove -> deleted = true;
+        aliveSize_--;
     }
 }
 
@@ -460,7 +464,8 @@ typename HashTable<K,V,Prober,Hash,KEqual>::HashItem* HashTable<K,V,Prober,Hash,
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::resize()
 {
-    size_ = 0;
+    aliveSize_ = 0;
+    totalSize_ = 0;
     HASH_INDEX_T oldSize = CAPACITIES[mIndex_];
 
     if(mIndex_+1 >= CAPACITIES_SIZE){
@@ -486,7 +491,8 @@ void HashTable<K,V,Prober,Hash,KEqual>::resize()
             HASH_INDEX_T probe_index = probe(currItem.first);
             table_[probe_index] = oldTable[i];
             oldTable[i] = nullptr;
-            size_++;
+            aliveSize_++;
+            totalSize_++;
         }
     }
 }
