@@ -310,7 +310,9 @@ template<typename K, typename V, typename Prober, typename Hash, typename KEqual
 HashTable<K,V,Prober,Hash,KEqual>::~HashTable()
 {
     while(!table_.empty()){
-        delete table_.back();
+        if(table_.back()){
+            delete table_.back();
+        }
         table_.pop_back();
     }
 }
@@ -352,6 +354,7 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
     //Maybe you need to be a bit more creative depending on how we're handling probe: that's my future problem. 
     if(this -> loadFactor_ >= this -> resizeAlpha_){
         resize();
+        std::cout << "resized when: " << p.first << std::endl;
     }
 
     HASH_INDEX_T h = this->probe(p.first);
@@ -371,9 +374,9 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
         table_[h]->item.second = p.second;
     }
     
-    
+    loadFactor_ = static_cast<double>(size()) / CAPACITIES[mIndex_];
+    std::cout << "Load factor: " << loadFactor_ << std::endl;
 
-    loadFactor_ = size() / CAPACITIES[mIndex_];
 }
 
 // To be completed
@@ -458,33 +461,33 @@ typename HashTable<K,V,Prober,Hash,KEqual>::HashItem* HashTable<K,V,Prober,Hash,
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::resize()
 {
+    std::cout << "Resizing" << std::endl;
     HASH_INDEX_T oldSize = CAPACITIES[mIndex_];
-    mIndex_++;
 
-    if(mIndex_ >= CAPACITIES_SIZE){
+    if(mIndex_+1 >= CAPACITIES_SIZE){
         throw std::logic_error("Hash table ran out of data size");
     }
 
+    mIndex_++;
+
     //Initialise newTable of size CAPACITIES[mIndex_] filled with nullptr
-    std::vector<HashItem*> newTable(CAPACITIES[mIndex_], nullptr);
-
-    for(HASH_INDEX_T i = 0; i < CAPACITIES[mIndex_]; i++){
-        if(i < oldSize){
-        //If in range of the old-size: check if delete is true, so we can either rehash or delete
-            if(table_[i] && table_[i] -> deleted){
-            //Delete this
-                delete table_[i];
-            }
-
-            else if(table_[i]){
-            //Rehash this to newTable (ensured table_[i] is not nullptr just to make sure)
-                ItemType currItem = table_[i] -> item;
-                HASH_INDEX_T probe_index = probe(currItem.first);
-                newTable[probe_index] = table_[i];
-                table_[i] = nullptr;
-            }
+    std::vector<HashItem*> oldTable(CAPACITIES[mIndex_], nullptr);
+    std::swap(oldTable, table_);
+    for(HASH_INDEX_T i = 0; i < oldSize; i++){
+    //If in range of the old-size: check if delete is true, so we can either rehash or delete
+        if(oldTable[i] && oldTable[i] -> deleted){
+        //Delete this
+            delete oldTable[i];
+            oldTable[i] = nullptr;
         }
-        table_ = newTable;
+
+        else if(oldTable[i]){
+        //Rehash this to newTable (ensured table_[i] is not nullptr just to make sure)
+            ItemType currItem = oldTable[i] -> item;
+            HASH_INDEX_T probe_index = probe(currItem.first);
+            table_[probe_index] = oldTable[i];
+            oldTable[i] = nullptr;
+        }
     }
 }
 
