@@ -26,12 +26,12 @@ struct MyStringHash {
         for(size_t i = 0; i < k.length()/6+1; i++){
             int max = k.length() - 1 - (6 * i);
             int currpos = max - 5;
+            if(currpos < 0){
+              currpos = 0;
+            }
             unsigned long long val = 0;
-            for(int j = 0; j < 6; j++){
-                if (k[currpos]){
-                    val = val * 36 + letterDigitToNumber(k[currpos]);
-                }
-                currpos++;
+            for(; currpos <= max; currpos++){
+              val = val * 36 + letterDigitToNumber(k[currpos]);
             }
             w[4-i] = val;
         } 
