@@ -278,6 +278,7 @@ private:
     // ADD MORE DATA MEMBERS HERE, AS NECESSARY
     double resizeAlpha_;
     double loadFactor_;
+    size_t size_;
 };
 
 // ----------------------------------------------------------------------------
@@ -302,6 +303,7 @@ HashTable<K,V,Prober,Hash,KEqual>::HashTable(
     // Initialize any other data members as necessary
     mIndex_ = 0;
     loadFactor_ = 0;
+    size_ = 0;
     table_.resize(CAPACITIES[mIndex_], nullptr);
 }
 
@@ -337,21 +339,15 @@ bool HashTable<K,V,Prober,Hash,KEqual>::empty() const
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
 {
-    size_t size = 0;
-    typename std::vector<HashItem*>::const_iterator it = table_.begin();
-    for(; it != table_.end(); ++it){
-        if(*it && !((*it) -> deleted)){
-            size++;
-        }
-    }
-    return size;
+    return size_;
 }
 
 // To be completed
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 {
-    //Maybe you need to be a bit more creative depending on how we're handling probe: that's my future problem. 
+    loadFactor_ = static_cast<double>(size_) / CAPACITIES[mIndex_];
+
     if(this -> loadFactor_ >= this -> resizeAlpha_){
         resize();
         std::cout << "resized when: " << p.first << std::endl;
@@ -372,9 +368,12 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
     else{
     //Update an existing value
         table_[h]->item.second = p.second;
+        size_++;
     }
     
-    loadFactor_ = static_cast<double>(size()) / CAPACITIES[mIndex_];
+    std::cout << "size: " << size_ << std::endl;
+    std::cout << "CAPACITIES[mIndex_]: " << CAPACITIES[mIndex_] << std::endl;
+    std::cout << "loadFactor_: " << loadFactor_ << std::endl;
 }
 
 // To be completed
