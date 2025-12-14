@@ -341,14 +341,7 @@ bool HashTable<K,V,Prober,Hash,KEqual>::empty() const
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
 {
-    size_t size = 0;
-    typename std::vector<HashItem*>::const_iterator it = table_.begin();
-    for(; it != table_.end(); ++it){
-        if(*it && !((*it) -> deleted)){
-            size++;
-        }
-    }
-    return size;
+  return aliveSize_;
 }
 
 // To be completed
