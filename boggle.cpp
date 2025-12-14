@@ -104,19 +104,20 @@ bool boggleHelper(const std::set<std::string>& dict, const std::set<std::string>
 		std::string nextWord = word + board[r][c];
 		bool isPrefix = (prefix.find(nextWord) != prefix.end());
 		bool isDict = (dict.find(nextWord) != dict.end());
-
+    bool longer;
 		if(!isPrefix && !isDict){
+    //Zero potential
 			return false;
 		}
 
-		else{
-			bool longer = boggleHelper(dict, prefix, board, nextWord, result, r+dr, c+dc, dr, dc);
-			if(isDict){
-				if(!longer){
-					result.insert(word);
-				}
-			} 
-			return isDict || longer;
-		}
+    if(isPrefix){
+      longer = boggleHelper(dict, prefix, board, nextWord, result, r+dr, c+dc, dr, dc);
+    }
+    
+    if(isDict && !longer){
+      result.insert(nextWord);
+    }
+
+    return isDict || longer;
 	}
 }
