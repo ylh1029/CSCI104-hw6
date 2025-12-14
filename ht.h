@@ -339,7 +339,14 @@ bool HashTable<K,V,Prober,Hash,KEqual>::empty() const
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 size_t HashTable<K,V,Prober,Hash,KEqual>::size() const
 {
-    return size_;
+    size_t size = 0;
+    typename std::vector<HashItem*>::const_iterator it = table_.begin();
+    for(; it != table_.end(); ++it){
+        if(*it && !((*it) -> deleted)){
+            size++;
+        }
+    }
+    return size;
 }
 
 // To be completed
@@ -350,7 +357,6 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
 
     if(this -> loadFactor_ >= this -> resizeAlpha_){
         resize();
-        std::cout << "resized when: " << p.first << std::endl;
     }
 
     HASH_INDEX_T h = this->probe(p.first);
@@ -363,17 +369,13 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
     else if(!table_[h]){
     //Found a free space 
         table_[h] = new HashItem(p);
+        size_++;
     }
 
     else{
     //Update an existing value
         table_[h]->item.second = p.second;
-        size_++;
     }
-    
-    std::cout << "size: " << size_ << std::endl;
-    std::cout << "CAPACITIES[mIndex_]: " << CAPACITIES[mIndex_] << std::endl;
-    std::cout << "loadFactor_: " << loadFactor_ << std::endl;
 }
 
 // To be completed
@@ -458,7 +460,7 @@ typename HashTable<K,V,Prober,Hash,KEqual>::HashItem* HashTable<K,V,Prober,Hash,
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::resize()
 {
-    std::cout << "Resizing" << std::endl;
+    size_ = 0;
     HASH_INDEX_T oldSize = CAPACITIES[mIndex_];
 
     if(mIndex_+1 >= CAPACITIES_SIZE){
@@ -484,6 +486,7 @@ void HashTable<K,V,Prober,Hash,KEqual>::resize()
             HASH_INDEX_T probe_index = probe(currItem.first);
             table_[probe_index] = oldTable[i];
             oldTable[i] = nullptr;
+            size_++;
         }
     }
 }
